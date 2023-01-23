@@ -1,13 +1,14 @@
 import { ChangeEvent, useState } from "react"
-import {optionType} from "../types"
+import { optionType } from "../types"
 const App = (): JSX.Element => {
  
  
  const [term, setTerm] = useState<string>('')
- const [options, setOptions] = useState<[]>([]);
+ const [options, setOptions] = useState<[]>([])
+const [city, setCity] = useState<optionType | null >(null)
 
  const getSearchOptions = (value: string) => {
-  fetch(`http://api.openweathermap.org/geo/1.0/direct?q=${value.trim()},&limit=5&appid=${process.env.REACT_APP_API_KEY}`)
+  fetch(`https://api.openweathermap.org/geo/1.0/direct?q=${value.trim()}&limit=5&appid=${process.env.REACT_APP_API_KEY}`)
  .then((res)=>res.json())
  .then((data) => setOptions(data))
 }
@@ -20,8 +21,28 @@ const onInputChange = (ev: ChangeEvent<HTMLInputElement>) => {
   
   getSearchOptions(value)
  }
- const onOptionSelect = (option: optionType) => {
 
+ const getForecast = (city: optionType) => {
+fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city.lat}&lon=${city.lon}&units=metric&appid=${process.env.REACT_APP_API_KEY}`)
+.then((res)=>res.json())
+.then((data) => console.log({data}))
+
+ }
+
+ const onSubmit = () => {
+if(!city)  return
+getForecast(city)
+
+
+ }
+
+ const onOptionSelect = (option: optionType) => {
+  setCity(option);
+
+
+fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${option.lat}&lon=${option.lon}&units=metric&appid=${process.env.REACT_APP_API_KEY}`)
+.then((res)=>res.json())
+.then((data) => console.log({data}))
  }
   return (
     <main className="flex 
@@ -61,7 +82,7 @@ Enter below a place you want to know the weather of and select the option from t
  hover:border-zinc-500 
  hover:text-zinc-500 
  text-zinc-100 px-2
- py-1 cursor-pointer">
+ py-1 cursor-pointer" onClick={onSubmit}>
   search
  </button>
  </div>
